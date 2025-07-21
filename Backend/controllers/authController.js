@@ -22,7 +22,7 @@ const hashedPassword=await bcrypt.hash(password,saltedRounds);
 const newUser=await CreateUser(email ,hashedPassword);
 
 //return a status of 201 and a json of id and email
-res.status(201).json({id: newUser.id, email: newUser.email})
+res.status(201).json({id: newUser.id, email: newUser.email,message:"User was created successfully"})
 
 }
 //catch err
@@ -49,7 +49,7 @@ const user=await findUserbyEmail(email);
 //if(!user) return a res status of 401 and a json message of invalid credentials
 if(!user) return res.status(401).json({message: 'Invalid user'})
 //match the password we get from the req.body with the password we have in the database
-const match=bcrypt.compare(password, user.password);
+const match=await bcrypt.compare(password, user.password);
 //if(!match) return a status of 401 and a json message of invalid crendentials 
 if(!match) return res.status(401).json({message: 'Invalid credentials'})
 

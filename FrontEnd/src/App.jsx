@@ -8,6 +8,32 @@ function App() {
   const [token, setToken] = useState(localStorage.getItem('token') || '');
   const [message, setMessage] = useState('');
 
+  // ✅ Registration function
+  const register = async () => {
+    try {
+      const res = await fetch(`${API_URL}/api/auth/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await res.json();
+
+      if (data.token || data.message==="User was created successfully") {
+        localStorage.setItem('token', data.token);
+        setToken(data.token);
+        setMessage('Registration successful!');
+      } else  {
+        
+        setMessage(data.message || 'Registration failed');
+      }
+    } catch (err) {
+      console.error("Registration error:", err);
+      setMessage('Registration request failed');
+    }
+  };
+
+  // ✅ Login function
   const login = async () => {
     try {
       const res = await fetch(`${API_URL}/api/auth/login`, {
@@ -22,8 +48,12 @@ function App() {
         localStorage.setItem('token', data.token);
         setToken(data.token);
         setMessage('Login successful!');
-      } else {
+      }
+      //else if the response sends back invalid credentials
+      else if(data.message==='Invalid credentials') {
+        
         setMessage(data.message || 'Login failed');
+        localStorage.removeItem('token');
       }
     } catch (err) {
       console.error("Login error:", err);
@@ -31,6 +61,7 @@ function App() {
     }
   };
 
+  // ✅ Get protected data
   const getProtectedData = async () => {
     if (!token) {
       setMessage('You must login first');
@@ -43,13 +74,14 @@ function App() {
       });
 
       const data = await res.json();
-      setMessage(data.message || 'No message');
+      setMessage(data.message || 'no message');
     } catch (err) {
       console.error("Fetch protected data error:", err);
       setMessage('Failed to fetch protected data');
     }
   };
 
+  // ✅ Logout
   const logout = () => {
     setToken('');
     localStorage.removeItem('token');
@@ -62,7 +94,7 @@ function App() {
 
       <input
         type="text"
-        placeholder="Username"
+        placeholder="Email"
         value={email}
         onChange={e => setEmail(e.target.value)}
       /><br /><br />
@@ -74,6 +106,7 @@ function App() {
         onChange={e => setPassword(e.target.value)}
       /><br /><br />
 
+      <button onClick={register}>Register</button>
       <button onClick={login}>Login</button>
       <button onClick={getProtectedData} disabled={!token}>Access Protected Route</button>
       <button onClick={logout}>Logout</button>
